@@ -487,11 +487,11 @@
                     <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,6,0">
-                    <TextBlock Text="CALLBACK DATE" Style="{StaticResource Caps}" Margin="0,0,0,4"/>
+                    <TextBlock Text="CALLBACK DATE (ET)" Style="{StaticResource Caps}" Margin="0,0,0,4"/>
                     <ComboBox ItemsSource="{Binding CallbackDates}" SelectedItem="{Binding CallbackDate, Mode=TwoWay}" DisplayMemberPath="Label"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="TIME" Style="{StaticResource Caps}" Margin="0,0,0,4"/>
+                    <TextBlock Text="TIME (ET)" Style="{StaticResource Caps}" Margin="0,0,0,4"/>
                     <ComboBox ItemsSource="{Binding CallbackTimes}" SelectedItem="{Binding CallbackTime, Mode=TwoWay}"/>
                 </StackPanel>
             </Grid>

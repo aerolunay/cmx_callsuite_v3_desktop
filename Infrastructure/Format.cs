@@ -34,6 +34,7 @@ public static class Format
     public static string Seconds(int? seconds) =>
         seconds is null ? "" : Clock(TimeSpan.FromSeconds(seconds.Value));
 
+    /// <summary>Time of day in US Eastern, e.g. "2:05 PM ET" — never the PC's own zone.</summary>
     public static string TimeOfDay(DateTimeOffset? value) =>
-        value is null ? "" : value.Value.ToLocalTime().ToString("h:mm tt", CultureInfo.CurrentCulture);
+        value is null ? "" : Eastern.From(value.Value).ToString("h:mm tt", CultureInfo.InvariantCulture) + " ET";
 }

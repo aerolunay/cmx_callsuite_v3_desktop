@@ -92,13 +92,8 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
             new StatusOption("TRAINING", "Training"),
         };
 
-        CallbackDates = Enumerable.Range(0, 30)
-            .Select(i => DateTime.Today.AddDays(i))
-            .Select(d => new DateOption(d, DayLabel(d)))
-            .ToList();
-        CallbackTimes = Enumerable.Range(0, 13 * 4) // 8:00 AM → 8:45 PM in 15-minute steps
-            .Select(i => DateTime.Today.AddHours(8).AddMinutes(15 * i).ToString("h:mm tt", CultureInfo.InvariantCulture))
-            .ToList();
+        _callbackDates = BuildCallbackDates();
+        _callbackTimes = BuildCallbackTimes(null);
 
         Callbacks = new CallbacksViewModel(main, this);
 
@@ -136,9 +131,37 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
 
     }
 
-    private static string DayLabel(DateTime d) =>
-        d == DateTime.Today ? "Today"
-        : d == DateTime.Today.AddDays(1) ? "Tomorrow"
+    // Callback dates are US Eastern days: "Today" means today in New York, even for an
+    // agent in Manila where it may already be tomorrow.
+    private static readonly TimeSpan FirstSlot = TimeSpan.FromHours(8);        // 8:00 AM ET
+    private static readonly TimeSpan LastSlot = new(20, 45, 0);                // 8:45 PM ET
+    private static readonly TimeSpan SlotStep = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan MinLeadTime = TimeSpan.FromMinutes(5);    // no callbacks "in 1 minute"
+
+    private static IReadOnlyList<DateOption> BuildCallbackDates()
+    {
+        var today = Eastern.Today;
+        // After the last slot of the day (ET), "Today" is no longer bookable.
+        var first = Eastern.Now + MinLeadTime > today + LastSlot ? today.AddDays(1) : today;
+        return Enumerable.Range(0, 30)
+            .Select(i => first.AddDays(i))
+            .Select(d => new DateOption(d, DayLabel(d, today)))
+            .ToList();
+    }
+
+    /// <summary>15-minute slots, 8:00 AM–8:45 PM ET; for today (ET) only slots still ahead.</summary>
+    private static IReadOnlyList<string> BuildCallbackTimes(DateTime? date)
+    {
+        var slots = new List<string>();
+        var earliest = date == Eastern.Today ? Eastern.Now.TimeOfDay + MinLeadTime : TimeSpan.Zero;
+        for (var t = FirstSlot; t <= LastSlot; t += SlotStep)
+            if (t >= earliest) slots.Add(DateTime.Today.Add(t).ToString("h:mm tt", CultureInfo.InvariantCulture));
+        return slots;
+    }
+
+    private static string DayLabel(DateTime d, DateTime today) =>
+        d == today ? "Today"
+        : d == today.AddDays(1) ? "Tomorrow"
         : d.ToString("ddd, MMM d", CultureInfo.CurrentCulture);
 
     // ================================================================= startup
@@ -227,7 +250,6 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     public string Status => _status;
     public string AgentName => _main.AgentName;
 
-    
     // Header indicator: shows the aux status while the phone is registered,
     // "Not Registered" (red) when it isn't — calls can't reach the agent then.
     public bool PhoneRegistered => _main.SipRegistered;
@@ -1065,8 +1087,11 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     // ================================================================= disposition
 
     public ObservableCollection<DispositionItem> Dispositions { get; } = new();
-    public IReadOnlyList<DateOption> CallbackDates { get; }
-    public IReadOnlyList<string> CallbackTimes { get; }
+    private IReadOnlyList<DateOption> _callbackDates;
+    public IReadOnlyList<DateOption> CallbackDates => _callbackDates;
+    public string CallbackZoneLabel => $"Times are US Eastern ({Eastern.Abbreviation(Eastern.Now)})";
+    private IReadOnlyList<string> _callbackTimes;
+    public IReadOnlyList<string> CallbackTimes => _callbackTimes;
 
     public bool DispositionEnabled => HasCall && !IsConnecting;
 
@@ -1092,7 +1117,15 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     public DateOption? CallbackDate
     {
         get => _callbackDate;
-        set { if (Set(ref _callbackDate, value)) CommandManager.InvalidateRequerySuggested(); }
+        set
+        {
+            if (!Set(ref _callbackDate, value)) return;
+            // Today (ET) only offers times that are still ahead.
+            _callbackTimes = BuildCallbackTimes(value?.Date);
+            Notify(nameof(CallbackTimes));
+            if (CallbackTime != null && !_callbackTimes.Contains(CallbackTime)) CallbackTime = null;
+            CommandManager.InvalidateRequerySuggested();
+        }
     }
 
     public string? CallbackTime
@@ -1145,6 +1178,8 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
 
     private void ResetDispositionForm()
     {
+        _callbackDates = BuildCallbackDates();
+        Notify(nameof(CallbackDates), nameof(CallbackZoneLabel));
         _transferDetected = false;
         _selectedDisposition = null;
         foreach (var d in Dispositions) d.SetSelectedSilently(false);
@@ -1232,7 +1267,8 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     {
         if (!NeedsCallbackTime || CallbackDate == null || CallbackTime == null) return null;
         var time = DateTime.ParseExact(CallbackTime, "h:mm tt", CultureInfo.InvariantCulture);
-        return $"{CallbackDate.Date:yyyy-MM-dd}T{time:HH:mm}"; // same shape as <input type="datetime-local">
+        // US Eastern wall-clock time (the server and database zone), same shape as <input type="datetime-local">.
+        return $"{CallbackDate.Date:yyyy-MM-dd}T{time:HH:mm}";
     }
 
     private async Task SaveDispositionAsync()

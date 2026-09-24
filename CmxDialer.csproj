@@ -10,11 +10,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>CmxDialer</RootNamespace>
     <AssemblyName>CmxDialer</AssemblyName>
-    <Product>CMX Callsuite Desktop v3</Product>
+    <Product>CMX CallSuite Desktop v3</Product>
     <Company>CallMax Solutions</Company>
     <Version>3.1.2</Version>
     <ApplicationIcon>Assets\handset.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WFO0003 is WinForms-only advice; this is a WPF app and WPF sets DPI awareness via the manifest -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
     <!-- Single self-contained exe for easy deployment: dotnet publish -c Release -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>

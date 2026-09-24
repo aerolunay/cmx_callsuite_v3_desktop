@@ -56,7 +56,7 @@
             </Border>
         </StackPanel>
 
-        <TextBlock Text="CMX CallSuite v3.1.2 · CMX Innovations · Callmax Solutions" Style="{StaticResource Muted}" FontSize="11"
+        <TextBlock Text="{Binding AppVersion, StringFormat='CMX CallSuite v{0} · CMX Innovations · CallMax Solutions'}" Style="{StaticResource Muted}" FontSize="11"
                    VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
     </Grid>
 </UserControl>

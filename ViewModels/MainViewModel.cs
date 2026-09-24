@@ -22,6 +22,7 @@ public sealed class MainViewModel : ObservableObject
     private DialerViewModel? _dialer;
     private SipCredentials? _sipCredentials;
     private string? _sipHost;
+    private SipTunnel? _tunnel;
 
     public AppSettings Settings { get; }
     public ApiClient Api { get; private set; }
@@ -163,14 +164,36 @@ public sealed class MainViewModel : ObservableObject
     public async Task RegisterPhoneAsync()
     {
         _sipCredentials ??= await Api.GetSipCredentialsAsync();
-        _sipHost = !string.IsNullOrWhiteSpace(Settings.SipHostOverride)
-            ? Settings.SipHostOverride!.Trim()
-            : new Uri(_sipCredentials.WssUrl).Host;
 
-        Log.Info($"Registering {_sipCredentials.Extension} to {_sipHost}:{Settings.SipPort} (UDP)");
-        var ok = await Phone.RegisterAsync(_sipHost, Settings.SipPort, _sipCredentials.Extension,
-            _sipCredentials.Password, Settings.SipRegisterExpirySeconds, TimeSpan.FromSeconds(12));
+        bool ok;
+        if (Settings.UseSipTunnel)
+        {
+            // SIP through the signed-in HTTPS connection (port 443) — works on any network.
+            if (_tunnel == null)
+            {
+                _tunnel = new SipTunnel(Api);
+                _tunnel.Start();
+            }
+            if (!await _tunnel.WaitConnectedAsync(TimeSpan.FromSeconds(10)))
+                throw new InvalidOperationException("Couldn't open the secure phone connection to the dialer server.");
+
+            var local = _tunnel.LocalEndPoint;
+            Log.Info($"Registering {_sipCredentials.Extension} through the SIP tunnel ({Api.BaseUri.Host}:443)");
+            ok = await Phone.RegisterAsync("127.0.0.1", local.Port, _sipCredentials.Extension, _sipCredentials.Password,
+                Settings.SipRegisterExpirySeconds, TimeSpan.FromSeconds(12), outboundProxy: local);
+        }
+        else
+        {
+            _sipHost = !string.IsNullOrWhiteSpace(Settings.SipHostOverride)
+                ? Settings.SipHostOverride!.Trim()
+                : new Uri(_sipCredentials.WssUrl).Host;
+            Log.Info($"Registering {_sipCredentials.Extension} to {_sipHost}:{Settings.SipPort} (UDP)");
+            ok = await Phone.RegisterAsync(_sipHost, Settings.SipPort, _sipCredentials.Extension,
+                _sipCredentials.Password, Settings.SipRegisterExpirySeconds, TimeSpan.FromSeconds(12));
+        }
+
         SipRegistered = ok;
+        _dialer?.OnRegistrationChanged();
         if (!ok) throw new InvalidOperationException(Phone.LastError ?? "Phone registration failed.");
     }
 
@@ -291,6 +314,8 @@ public sealed class MainViewModel : ObservableObject
             Socket = null;
         }
         Phone.Stop();
+        _tunnel?.Dispose();
+        _tunnel = null;
         SipRegistered = false;
         _sipCredentials = null;
     }

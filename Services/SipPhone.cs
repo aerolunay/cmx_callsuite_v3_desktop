@@ -30,7 +30,8 @@ public sealed class SipPhone : IDisposable
     private int _audioInIndex = -1;
 
     // Auto-recovery: remembered so a dead registration can be rebuilt on a fresh UDP socket.
-    private (string Host, int Port, string Extension, string Password, int Expiry)? _registrationParams;
+    private (string Host, int Port, string Extension, string Password, int Expiry, IPEndPoint? Proxy)? _registrationParams;
+    private SIPEndPoint? _outboundProxy; // set when SIP runs through the SipTunnel
     private int _recovering;
 
     public event Action<bool, string?>? RegistrationChanged;
@@ -55,10 +56,16 @@ public sealed class SipPhone : IDisposable
     }
 
     /// <summary>Registers and waits for the first success/failure (or timeout).</summary>
-    public async Task<bool> RegisterAsync(string host, int port, string extension, string password, int expirySeconds, TimeSpan timeout)
+    /// <param name="outboundProxy">
+    /// When set (tunnel mode), all SIP goes to this local endpoint, which forwards it through
+    /// the signed-in HTTPS connection; the SIP socket then only listens on 127.0.0.1.
+    /// </param>
+    public async Task<bool> RegisterAsync(string host, int port, string extension, string password, int expirySeconds,
+        TimeSpan timeout, IPEndPoint? outboundProxy = null)
     {
-        _registrationParams = (host, port, extension, password, expirySeconds);
+        _registrationParams = (host, port, extension, password, expirySeconds, outboundProxy);
         TearDown();
+        _outboundProxy = outboundProxy == null ? null : new SIPEndPoint(SIPProtocolsEnum.udp, outboundProxy);
         LastError = null;
 
         try
@@ -74,7 +81,8 @@ public sealed class SipPhone : IDisposable
         }
 
         var transport = new SIPTransport();
-        transport.AddSIPChannel(new SIPUDPChannel(new IPEndPoint(IPAddress.Any, 0)));
+        var bindAddress = outboundProxy != null ? IPAddress.Loopback : IPAddress.Any;
+        transport.AddSIPChannel(new SIPUDPChannel(new IPEndPoint(bindAddress, 0)));
         transport.SIPTransportRequestReceived += OnRequestReceived;
         _transport = transport;
 
@@ -191,7 +199,7 @@ public sealed class SipPhone : IDisposable
         var transport = _transport;
         if (transport == null) return;
 
-        var ua = new SIPUserAgent(transport, null);
+        var ua = new SIPUserAgent(transport, _outboundProxy);
         // Microphone via SIPSorcery; its built-in playback is switched off (disableSink)
         // because its large buffer adds delay — CallAudioPlayer plays the caller instead.
         var audio = new WindowsAudioEndPoint(new AudioEncoder(), _audioOutIndex, _audioInIndex, false, true);
@@ -344,7 +352,7 @@ public sealed class SipPhone : IDisposable
 
                     Log.Info("Phone registration lost — reconnecting on a fresh socket");
                     var ok = await RegisterAsync(p.Value.Host, p.Value.Port, p.Value.Extension,
-                        p.Value.Password, p.Value.Expiry, TimeSpan.FromSeconds(12)).ConfigureAwait(false);
+                        p.Value.Password, p.Value.Expiry, TimeSpan.FromSeconds(12), p.Value.Proxy).ConfigureAwait(false);
                     if (ok) { Log.Info("Phone re-registered"); return; }
                     delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 60));
                 }

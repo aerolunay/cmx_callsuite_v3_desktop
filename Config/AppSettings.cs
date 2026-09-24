@@ -12,7 +12,14 @@ public sealed class AppSettings
     /// <summary>Base URL of the Node backend, e.g. https://dialer.cmxinnovations.com (no /api).</summary>
     public string ServerUrl { get; set; } = "https://dialer-dev.cmxinnovations.com";
 
-    /// <summary>Asterisk PJSIP UDP port the phone registers to.</summary>
+    /// <summary>
+    /// true (default): phone signalling goes through the signed-in HTTPS connection
+    /// (wss://server/ws/sip, port 443) — works from any network, no IP allow-lists.
+    /// false: register directly over UDP to SipPort (legacy / troubleshooting).
+    /// </summary>
+    public bool UseSipTunnel { get; set; } = true;
+
+    /// <summary>Asterisk PJSIP UDP port the phone registers to (only when UseSipTunnel is false).</summary>
     public int SipPort { get; set; } = 5060;
 
     /// <summary>
@@ -21,7 +28,7 @@ public sealed class AppSettings
     /// </summary>
     public string? SipHostOverride { get; set; }
 
-    public int SipRegisterExpirySeconds { get; set; } = 120;
+    public int SipRegisterExpirySeconds { get; set; } = 60;
 
     /// <summary>-1 = Windows default device.</summary>
     public int AudioOutputDeviceIndex { get; set; } = -1;

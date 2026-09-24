@@ -59,6 +59,15 @@ public sealed class LoginViewModel : ObservableObject
     public bool IsEmailCode => _step == Step.EmailCode;
     public bool TotpEnabled => _totpEnabled;
 
+    /// <summary>App version from the build (CmxDialer.csproj &lt;Version&gt;), e.g. "3.1.2".</summary>
+    public string AppVersion { get; } = GetVersion();
+
+    private static string GetVersion()
+    {
+        var v = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+        return v == null ? "" : $"{v.Major}.{v.Minor}.{v.Build}";
+    }
+
     public string CodePrompt => _step == Step.EmailCode
         ? $"Enter the code we emailed to {Email}."
         : "Enter the 6-digit code from your authenticator app.";
