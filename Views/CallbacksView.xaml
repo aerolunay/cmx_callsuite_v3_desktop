@@ -1,0 +1,99 @@
+<UserControl x:Class="CmxDialer.Views.CallbacksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter, Mode=TwoWay}" DisplayMemberPath="Label"
+                      FontWeight="SemiBold"/>
+            <Button Grid.Column="1" Style="{StaticResource OutlineButton}" Width="34" Height="34" Padding="0" Margin="8,0,0,0"
+                    Command="{Binding RefreshCommand}" ToolTip="Refresh">
+                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15"/>
+            </Button>
+        </Grid>
+
+        <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Margin="0,8,0,8"
+                   Text="Today's abandoned calls and voicemails that still need a callback. Saving the call's disposition clears it from this list."/>
+
+        <Grid Grid.Row="2">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Style="{StaticResource Badge}" Background="{Binding BadgeBackground}">
+                                            <TextBlock Text="{Binding TypeLabel}" Foreground="{Binding BadgeForeground}" FontSize="10" FontWeight="Bold"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding NumberText}" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,0"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding TimeText}" Style="{StaticResource Muted}" VerticalAlignment="Center"/>
+
+                                    <TextBlock Grid.Row="1" Text="{Binding DetailText}" Style="{StaticResource Muted}" Margin="0,6,8,0"
+                                               VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Button Style="{StaticResource OutlineButton}" Width="34" Height="32" Padding="0"
+                                                Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                Visibility="{Binding CanPlay, Converter={StaticResource BoolVis}}" ToolTip="Play / stop voicemail">
+                                            <Grid>
+                                                <Path Data="{StaticResource IconPlay}" Style="{StaticResource FilledIcon}" Width="12" Height="12"
+                                                      Visibility="{Binding IsNotPlaying, Converter={StaticResource BoolVis}}"/>
+                                                <Path Data="{StaticResource IconStop}" Style="{StaticResource FilledIcon}" Width="11" Height="11"
+                                                      Visibility="{Binding IsPlaying, Converter={StaticResource BoolVis}}"/>
+                                            </Grid>
+                                        </Button>
+                                        <Button Content="Call back" Style="{StaticResource PrimaryButton}" Height="32" Padding="12,0" FontSize="13"
+                                                Margin="6,0,0,0" Command="{Binding DataContext.CallBackCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,0"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="All caught up" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Text="No abandoned calls or voicemails waiting for this campaign today." Style="{StaticResource Muted}"
+                           TextAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <TextBlock Text="Loading…" Style="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0">
+                <TextBlock.Visibility>
+                    <MultiBinding Converter="{StaticResource LoadingVis}">
+                        <Binding Path="IsLoading"/>
+                        <Binding Path="HasItems"/>
+                    </MultiBinding>
+                </TextBlock.Visibility>
+            </TextBlock>
+
+            <Border Background="{StaticResource DangerSoftBrush}" CornerRadius="8" Padding="10,8" VerticalAlignment="Bottom"
+                    Visibility="{Binding Error, Converter={StaticResource StringVis}}">
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerTextBrush}" FontSize="12" TextWrapping="Wrap"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

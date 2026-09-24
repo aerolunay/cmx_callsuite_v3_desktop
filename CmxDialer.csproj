@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the tray icon (NotifyIcon); WinForms namespaces are NOT imported globally -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>CmxDialer</RootNamespace>
+    <AssemblyName>CmxDialer</AssemblyName>
+    <Product>CMX Callsuite Desktop v3</Product>
+    <Company>CallMax Solutions</Company>
+    <Version>3.1.2</Version>
+    <ApplicationIcon>Assets\handset.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Single self-contained exe for easy deployment: dotnet publish -c Release -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SIP stack + Windows audio (mic/speaker) for the built-in phone -->
+    <PackageReference Include="SIPSorcery" Version="10.0.16" />
+    <PackageReference Include="SIPSorceryMedia.Windows" Version="10.0.16" />
+    <!-- Voicemail playback + connect tone -->
+    <PackageReference Include="NAudio" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Brand assets, embedded in the exe -->
+    <Resource Include="Assets\handset.ico" />
+    <Resource Include="Assets\callmax-logo.png" />
+    <Resource Include="Assets\callmax-mark.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+<Application x:Class="CmxDialer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CmxDialer.ViewModels"
+             xmlns:views="clr-namespace:CmxDialer.Views"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Theme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Each screen's view model picks its view -->
+            <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+                <views:LoginView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CampaignSelectViewModel}">
+                <views:CampaignSelectView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ConnectingViewModel}">
+                <views:ConnectingView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DialerViewModel}">
+                <views:DialerView/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
