@@ -99,6 +99,8 @@ public sealed class SipPhone : IDisposable
         registration.RegistrationSuccessful += (uri, response) =>
         {
             if (!ReferenceEquals(_registration, registration)) return; // an old, replaced socket
+            _lastServerContact = DateTime.UtcNow;
+            StartWatchdog();
             Log.Info($"SIP registered {uri}");
             IsRegistered = true;
             LastError = null;
@@ -161,6 +163,7 @@ public sealed class SipPhone : IDisposable
                     break;
                 case SIPMethodsEnum.OPTIONS:
                 case SIPMethodsEnum.NOTIFY:
+                    _lastServerContact = DateTime.UtcNow;
                     await RespondAsync(request, SIPResponseStatusCodesEnum.Ok).ConfigureAwait(false);
                     break;
                 case SIPMethodsEnum.BYE:
@@ -296,7 +299,11 @@ public sealed class SipPhone : IDisposable
 
         try { audio?.CloseAudio(); } catch (Exception ex) { Log.Error("Closing audio failed", ex); }
         player?.Dispose();
-        try { (ua as IDisposable)?.Dispose(); } catch { /* ignore */ }
+        // Deliberately NOT disposing the per-call SIPUserAgent: it shares the phone's one SIP
+        // transport, and disposing it can take that transport down with it — the phone then
+        // silently stops answering Asterisk's keep-alive checks after every call, Asterisk marks
+        // it Unavailable ("Is endpoint registered and reachable?") and the next queued call
+        // can't reach the agent. The hung-up agent is simply released for garbage collection.
         CallEnded?.Invoke();
     }
 
@@ -343,10 +350,38 @@ public sealed class SipPhone : IDisposable
         OnHungUp(ua);
     }
 
+    // ------------------------------------------------------------------ reachability watchdog
+    // Asterisk checks every desktop phone with an OPTIONS "are you there?" every 30 s. If the
+    // phone hasn't heard one (or any other request) for 95 s while it believes it's registered,
+    // the server can no longer reach it — whatever the cause. Rebuild on a fresh socket then,
+    // instead of waiting up to an hour for the next scheduled re-registration.
+    private DateTime _lastServerContact = DateTime.UtcNow;
+    private Timer? _watchdog;
+    private static readonly TimeSpan WatchdogLimit = TimeSpan.FromSeconds(95);
+
+    private void StartWatchdog()
+    {
+        _watchdog ??= new Timer(_ => CheckReachable(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private void CheckReachable()
+    {
+        if (_registrationParams == null || !IsRegistered || IsInCall) return;
+        var silent = DateTime.UtcNow - _lastServerContact;
+        if (silent < WatchdogLimit) return;
+        Log.Info($"No keep-alive from the phone server for {(int)silent.TotalSeconds}s — re-registering on a fresh socket");
+        _lastServerContact = DateTime.UtcNow; // don't fire again while recovering
+        IsRegistered = false;
+        RegistrationChanged?.Invoke(false, "No keep-alive from the phone server");
+        ScheduleRecovery();
+    }
+
     /// <summary>Signs the phone out for good (sign-out, app exit). Stops auto-recovery.</summary>
     public void Stop()
     {
         _registrationParams = null;
+        _watchdog?.Dispose();
+        _watchdog = null;
         TearDown();
     }
 
