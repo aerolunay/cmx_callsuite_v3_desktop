@@ -44,6 +44,14 @@ public sealed class SipTunnel : IDisposable
 
     public bool IsConnected { get; private set; }
 
+    /// <summary>
+    /// Raised when the tunnel comes back after a drop. The server-side relay gives the phone a
+    /// NEW address on every connection, so the phone must re-register right away or Asterisk
+    /// keeps calling the old, dead address until the registration expires.
+    /// </summary>
+    public event Action? Reconnected;
+    private bool _everConnected;
+
     public void Start()
     {
         if (_cts != null) return;
@@ -77,6 +85,8 @@ public sealed class SipTunnel : IDisposable
                 IsConnected = true;
                 _firstConnect.TrySetResult(true);
                 Log.Info("SIP tunnel connected");
+                if (_everConnected) Reconnected?.Invoke();
+                _everConnected = true;
                 await ReceiveLoopAsync(ws, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) { break; }

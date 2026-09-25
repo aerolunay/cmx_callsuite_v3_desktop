@@ -23,6 +23,7 @@ public sealed class MainViewModel : ObservableObject
     private SipCredentials? _sipCredentials;
     private string? _sipHost;
     private SipTunnel? _tunnel;
+    private const int TunnelRegisterExpirySeconds = 3600; // Asterisk DESKTOP aor maximum_expiration
 
     public AppSettings Settings { get; }
     public ApiClient Api { get; private set; }
@@ -56,7 +57,15 @@ public sealed class MainViewModel : ObservableObject
         // Only auto-answer while the agent is Ready or already handling a call (see DialerViewModel).
         Phone.ShouldAnswer = () => _dialer?.AcceptsIncomingCalls ?? false;
         Phone.CallAnswered += () => Ui(() => _dialer?.OnPhoneAnswered());
-        Phone.CallEnded += () => Ui(() => _dialer?.OnPhoneEnded());
+        Phone.CallEnded += () => Ui(() =>
+        {
+            _dialer?.OnPhoneEnded();
+            if (_reregisterAfterCall && SessionActive)
+            {
+                _reregisterAfterCall = false;
+                _ = ReregisterAsync("Re-registering the phone after the call (tunnel had reconnected)");
+            }
+        });
 
         SystemEvents.PowerModeChanged += OnPowerModeChanged;
 
@@ -172,15 +181,24 @@ public sealed class MainViewModel : ObservableObject
             if (_tunnel == null)
             {
                 _tunnel = new SipTunnel(Api);
+                _tunnel.Reconnected += OnTunnelReconnected;
                 _tunnel.Start();
             }
             if (!await _tunnel.WaitConnectedAsync(TimeSpan.FromSeconds(10)))
                 throw new InvalidOperationException("Couldn't open the secure phone connection to the dialer server.");
 
             var local = _tunnel.LocalEndPoint;
-            Log.Info($"Registering {_sipCredentials.Extension} through the SIP tunnel ({Api.BaseUri.Host}:443)");
+            // Through the tunnel there's no router/NAT to keep alive (the WebSocket's own pings do
+            // that), so the short 60 s UDP expiry only adds risk: if one refresh is late — seen
+            // around calls — Asterisk drops the contact ("Could not create dialog … Is endpoint
+            // registered and reachable?") and a queued call can't reach the agent for ~30 s.
+            // A 1-hour expiry leaves huge margin (a late refresh can't drop the phone). The relay
+            // gives each extension a fixed address, and the app still re-registers immediately
+            // whenever the tunnel reconnects, so Asterisk always has the current route.
+            var expiry = Math.Max(Settings.SipRegisterExpirySeconds, TunnelRegisterExpirySeconds);
+            Log.Info($"Registering {_sipCredentials.Extension} through the SIP tunnel ({Api.BaseUri.Host}:443), expiry {expiry}s");
             ok = await Phone.RegisterAsync("127.0.0.1", local.Port, _sipCredentials.Extension, _sipCredentials.Password,
-                Settings.SipRegisterExpirySeconds, TimeSpan.FromSeconds(12), outboundProxy: local);
+                expiry, TimeSpan.FromSeconds(12), outboundProxy: local);
         }
         else
         {
@@ -314,8 +332,10 @@ public sealed class MainViewModel : ObservableObject
             Socket = null;
         }
         Phone.Stop();
+        if (_tunnel != null) _tunnel.Reconnected -= OnTunnelReconnected;
         _tunnel?.Dispose();
         _tunnel = null;
+        _reregisterAfterCall = false;
         SipRegistered = false;
         _sipCredentials = null;
     }
@@ -354,6 +374,29 @@ public sealed class MainViewModel : ObservableObject
 
         _dialer?.HandleSocketMessage(message);
     });
+
+    // Tunnel came back with a new relay address: re-register now (after the current call,
+    // if there is one — re-registering rebuilds the phone and would drop the call).
+    private bool _reregisterAfterCall;
+
+    private void OnTunnelReconnected() => Ui(() =>
+    {
+        if (!SessionActive) return;
+        if (Phone.IsInCall)
+        {
+            _reregisterAfterCall = true;
+            Log.Info("SIP tunnel reconnected during a call — re-registering when it ends");
+            return;
+        }
+        _ = ReregisterAsync("SIP tunnel reconnected — re-registering the phone");
+    });
+
+    private async Task ReregisterAsync(string reason)
+    {
+        Log.Info(reason);
+        try { await RegisterPhoneAsync(); }
+        catch (Exception ex) { _dialer?.ShowError("Phone re-registration failed: " + ex.Message); }
+    }
 
     private void OnSocketConnectionChanged(bool connected) => Ui(() => _dialer?.SetServerConnected(connected));
 
