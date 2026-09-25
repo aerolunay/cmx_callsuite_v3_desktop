@@ -241,6 +241,9 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
 
     public string CampaignSummary => string.Join(", ", WorkingCampaigns.Select(c => c.DisplayName));
 
+    /// <summary>Campaign code(s) for the tab bar, e.g. "CMXBSCSR" (full names in the tooltip).</summary>
+    public string CampaignCodes => string.Join(", ", WorkingCampaigns.Select(c => c.CampaignId));
+
     public bool CanChangeCampaign => _status == "NOT_READY" && !HasCall && !Busy;
 
     // ================================================================= status

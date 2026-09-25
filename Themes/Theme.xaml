@@ -234,32 +234,46 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Phone / Callbacks tabs. Tag=True = the tab currently on screen: tinted
+         background, bold navy text and a cyan underline. Set with Style triggers
+         (not template triggers) so the highlight always applies. -->
     <Style x:Key="TabButton" TargetType="Button">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0,0,0,3"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Padding" Value="10,0"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="Margin" Value="0,4,2,0"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2" Padding="{TemplateBinding Padding}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6,6,0,0"
+                            Padding="{TemplateBinding Padding}">
                         <ContentPresenter VerticalAlignment="Center"/>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
-                        </DataTrigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
+            </Trigger>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                <Setter Property="Background" Value="{StaticResource CyanSoftBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+            </DataTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- Disposition tile -->

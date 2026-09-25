@@ -70,9 +70,10 @@
                         </Border>
                     </StackPanel>
                 </Button>
-                <TextBlock Grid.Column="2" Text="{Binding CampaignSummary}" Style="{StaticResource Muted}" TextWrapping="NoWrap"
-                           TextTrimming="CharacterEllipsis" TextAlignment="Right" VerticalAlignment="Center" Margin="10,0,8,0"
-                           ToolTip="{Binding CampaignSummary}"/>
+                <!-- Campaign code(s), e.g. CMXBSCSR; hover for the full campaign name(s). -->
+                <TextBlock Grid.Column="2" Text="{Binding CampaignCodes}" Style="{StaticResource Muted}" FontWeight="SemiBold"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" TextAlignment="Right" VerticalAlignment="Center"
+                           Margin="10,0,8,0" ToolTip="{Binding CampaignSummary}"/>
                 <Button Grid.Column="3" Content="Change" Style="{StaticResource LinkButton}" Command="{Binding ChangeCampaignCommand}"
                         ToolTip="Switch campaign (only while Not Ready)"/>
             </Grid>
