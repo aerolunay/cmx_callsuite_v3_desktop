@@ -225,13 +225,19 @@ public sealed class SipPhone : IDisposable
             Log.Info("Answering after a short wait for the agent's status to catch up");
         }
 
-        lock (_gate)
+        // The server only ever rings an agent's phone for ONE call at a time (it never routes
+        // to someone In Call; Line 2 / conference reuse the existing call). So a new call from
+        // the server while we still think a call is up means our old call is stale — its
+        // hang-up (BYE) was missed. Previously this was refused as "busy" without a log line,
+        // leaving the queued caller stuck on "ringing your phone". Now the stale call is
+        // cleaned up and the new call is answered.
+        SIPUserAgent? stale;
+        lock (_gate) stale = _activeCall?.IsCallActive == true ? _activeCall : null;
+        if (stale != null)
         {
-            if (_activeCall?.IsCallActive == true)
-            {
-                _ = RespondAsync(request, SIPResponseStatusCodesEnum.BusyHere);
-                return;
-            }
+            Log.Info($"New call from the server while a previous call was still marked active — ending the stale call and answering {request.Header.From?.FromURI}");
+            try { stale.Hangup(); } catch (Exception ex) { Log.Error("Stale call hangup failed", ex); }
+            OnHungUp(stale);
         }
 
         var transport = _transport;
