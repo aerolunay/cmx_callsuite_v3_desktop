@@ -44,6 +44,9 @@ public sealed class SipPhone : IDisposable
     /// </summary>
     public Func<bool>? ShouldAnswer { get; set; }
 
+    /// <summary>Caller ID number the backend uses for Silent Listen calls (monitoringService.js).</summary>
+    private const string SilentListenCallerId = "9999";
+
     public bool IsRegistered { get; private set; }
     public bool IsMuted { get; private set; }
     public bool IsInCall => _activeCall?.IsCallActive == true;
@@ -180,7 +183,13 @@ public sealed class SipPhone : IDisposable
             return;
         }
 
-        if (ShouldAnswer != null && !ShouldAnswer())
+        // Supervisor "Silent Listen" (Live Status page): the backend rings the
+        // listener's phone as "CMX Silent Listen" <9999>. Always answer it, even
+        // while Not Ready — it's listen-only and never an agent-routed call.
+        var isSilentListen = request.Header.From?.FromURI?.User == SilentListenCallerId;
+        if (isSilentListen) Log.Info("Answering supervisor Silent Listen call");
+
+        if (!isSilentListen && ShouldAnswer != null && !ShouldAnswer())
         {
             Log.Info($"Refused call from {request.Header.From?.FromURI}: agent is not taking calls");
             await RespondAsync(request, SIPResponseStatusCodesEnum.BusyHere).ConfigureAwait(false);
