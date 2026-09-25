@@ -502,7 +502,7 @@
             <!-- Two lines of text visible; longer comments scroll -->
             <TextBox Grid.Row="4" Margin="0,8,0,0" Height="64" Text="{Binding Comments, UpdateSourceTrigger=PropertyChanged}"
                      Tag="Comments (required)" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
-                     Padding="10,8" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding DispositionEnabled}"/>
+                     Padding="6,4" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding DispositionEnabled}"/>
 
             <CheckBox Grid.Row="5" Margin="0,8,0,0" Content="Set me to Not Ready after saving"
                       IsChecked="{Binding SetNotReadyAfterSave, Mode=TwoWay}" IsEnabled="{Binding DispositionEnabled}"/>
