@@ -15,7 +15,7 @@ public sealed class VoicemailPlayer : IDisposable
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     private readonly object _gate = new();
-    private WaveOutEvent? _output;
+    private WaveOut? _output;
     private WaveStream? _reader;
 
     public async Task PlayAsync(string url, Action onStopped)
@@ -31,7 +31,7 @@ public sealed class VoicemailPlayer : IDisposable
             throw new InvalidOperationException($"Unsupported voicemail format ({reader.WaveFormat.Encoding}).");
         }
 
-        var output = new WaveOutEvent();
+        var output = new WaveOut();
         output.Init(reader);
         output.PlaybackStopped += (_, e) =>
         {
@@ -50,12 +50,12 @@ public sealed class VoicemailPlayer : IDisposable
 
     public void Stop()
     {
-        WaveOutEvent? output;
+        WaveOut? output;
         lock (_gate) output = _output;
         try { output?.Stop(); } catch { /* ignore */ }
     }
 
-    private void Cleanup(WaveOutEvent output, WaveStream reader)
+    private void Cleanup(WaveOut output, WaveStream reader)
     {
         lock (_gate)
         {

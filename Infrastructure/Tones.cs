@@ -19,7 +19,7 @@ public static class Tones
                     Type = SignalGeneratorType.Sin,
                 }.Take(TimeSpan.FromMilliseconds(180));
 
-                using var output = new WaveOutEvent();
+                using var output = new WaveOut();
                 output.Init(tone);
                 output.Play();
                 while (output.PlaybackState == PlaybackState.Playing) Thread.Sleep(20);
