@@ -43,6 +43,9 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     private DateTime _lastLeadCheck = DateTime.MinValue;
     private bool _autoDialInFlight;
     private DateTime _nextAutoDialAt = DateTime.MinValue;
+    // Set when the agent is about to become Ready (status change, disposition saved):
+    // the backend may route a queued call before the new status reaches the app.
+    private DateTime _expectCallsUntil = DateTime.MinValue;
     private bool _serverConnected = true;
     private string _manualNumber = "";
     private bool _keypadOpen;
@@ -271,7 +274,7 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     /// so the phone itself also refuses calls unless the agent is Ready or already on a call.
     /// </summary>
     public bool AcceptsIncomingCalls =>
-        _status is "READY" or "IN_CALL" or "ON_HOLD" || _call != null || _inbound != null;
+        _status is "READY" or "IN_CALL" or "ON_HOLD" || _call != null || _inbound != null || DateTime.UtcNow < _expectCallsUntil;
     public bool IsSystemStatus => SystemStatuses.Contains(_status);
     public bool CanChangeStatus => !IsSystemStatus && !HasCall && !Busy;
     public string StatusLabel => StatusLabels.For(_status);
@@ -315,6 +318,7 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     private async Task ChangeStatusAsync(StatusOption option)
     {
         if (option.Value == _status) return;
+        if (option.Value == "READY") _expectCallsUntil = DateTime.UtcNow.AddSeconds(10);
         Error = null;
         Busy = true;
         try
@@ -1278,6 +1282,9 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     {
         var selected = _selectedDisposition;
         if (selected == null) return;
+        // Saving without "Set me Not Ready" makes the agent Ready on the server,
+        // which can route a waiting caller straight away.
+        if (!SetNotReadyAfterSave) _expectCallsUntil = DateTime.UtcNow.AddSeconds(10);
 
         Error = null;
         Busy = true;

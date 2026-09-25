@@ -47,6 +47,10 @@ public sealed class SipPhone : IDisposable
     /// <summary>Caller ID number the backend uses for Silent Listen calls (monitoringService.js).</summary>
     private const string SilentListenCallerId = "9999";
 
+    /// <summary>How long a call is held while the app's Ready/In-call state catches up (see HandleInviteAsync).</summary>
+    private const int AnswerGraceMs = 2000;
+    private readonly HashSet<string> _waitingInvites = new();
+
     public bool IsRegistered { get; private set; }
     public bool IsMuted { get; private set; }
     public bool IsInCall => _activeCall?.IsCallActive == true;
@@ -191,9 +195,34 @@ public sealed class SipPhone : IDisposable
 
         if (!isSilentListen && ShouldAnswer != null && !ShouldAnswer())
         {
-            Log.Info($"Refused call from {request.Header.From?.FromURI}: agent is not taking calls");
-            await RespondAsync(request, SIPResponseStatusCodesEnum.BusyHere).ConfigureAwait(false);
-            return;
+            // The backend can ring the phone a moment BEFORE the app hears about it
+            // (e.g. a queued caller routed the instant the agent saves a disposition or
+            // goes Ready — the status/call update arrives over the live connection a
+            // split second after the INVITE). So hold the call ("Trying"), and give the
+            // app's state up to 2 s to catch up before refusing.
+            var callId = request.Header.CallId;
+            lock (_gate)
+            {
+                if (!_waitingInvites.Add(callId)) return; // an INVITE retransmit of one we're already holding
+            }
+            try
+            {
+                await RespondAsync(request, SIPResponseStatusCodesEnum.Trying).ConfigureAwait(false);
+                for (var waited = 0; waited < AnswerGraceMs && !ShouldAnswer(); waited += 100)
+                    await Task.Delay(100).ConfigureAwait(false);
+            }
+            finally
+            {
+                lock (_gate) _waitingInvites.Remove(callId);
+            }
+
+            if (!ShouldAnswer())
+            {
+                Log.Info($"Refused call from {request.Header.From?.FromURI}: agent is not taking calls");
+                await RespondAsync(request, SIPResponseStatusCodesEnum.BusyHere).ConfigureAwait(false);
+                return;
+            }
+            Log.Info("Answering after a short wait for the agent's status to catch up");
         }
 
         lock (_gate)
