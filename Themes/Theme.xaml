@@ -5,6 +5,11 @@
     <!-- Brand colors (frontend/src/styles/theme.css) -->
     <SolidColorBrush x:Key="NavyBrush" Color="#0E1A2B"/> <!-- VoxSuite navy -->
     <SolidColorBrush x:Key="VoxOrangeBrush" Color="#FF6B3D"/> <!-- VoxSuite accent (logo) -->
+    <SolidColorBrush x:Key="VoxOrangeSoftBrush" Color="#FFF1EC"/>
+    <SolidColorBrush x:Key="VoxOrangeTextBrush" Color="#C2451B"/>
+    <SolidColorBrush x:Key="NavySoftBrush" Color="#1C2B42"/>   <!-- surfaces on the dark call card -->
+    <SolidColorBrush x:Key="NavyTextSoftBrush" Color="#9FB0CC"/>
+    <SolidColorBrush x:Key="ChipBrush" Color="#E8ECF3"/>        <!-- segmented control track, avatar -->
     <SolidColorBrush x:Key="CyanBrush" Color="#00ADEE"/>
     <SolidColorBrush x:Key="CyanSoftBrush" Color="#E0F5FD"/>
     <SolidColorBrush x:Key="CyanTextBrush" Color="#0079A8"/>
@@ -80,9 +85,9 @@
 
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource CardBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource LineSoftBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="12"/>
     </Style>
 
@@ -112,7 +117,7 @@
                             <Setter TargetName="Bd" Property="Opacity" Value="0.78"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Background" Value="#D9DEE6"/>
@@ -126,14 +131,15 @@
         </Setter>
     </Style>
 
+    <!-- The one main action on a screen (Continue, Sign in, Dial, Save disposition): VoxSuite orange. -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
-        <Setter Property="Background" Value="{StaticResource NavyBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
+        <Setter Property="Background" Value="{StaticResource VoxOrangeBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource VoxOrangeBrush}"/>
         <Setter Property="Foreground" Value="White"/>
     </Style>
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
         <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
     </Style>
     <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
@@ -156,7 +162,7 @@
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource CyanTextBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource VoxOrangeTextBrush}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -222,6 +228,47 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Round in-call control: the icon in a 48 px circle (the label goes under it in the view).
+         Tag=True = active (muted / on hold): orange tint. -->
+    <Style x:Key="RoundControl" TargetType="Button">
+        <Setter Property="Width" Value="48"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1" CornerRadius="24">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                <Setter Property="Background" Value="{StaticResource VoxOrangeSoftBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource VoxOrangeBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource VoxOrangeTextBrush}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Segmented / tab button. Tag=True = selected. -->
     <Style x:Key="SegmentButton" TargetType="Button" BasedOn="{StaticResource OutlineButton}">
         <Setter Property="Height" Value="34"/>
@@ -244,19 +291,15 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0,0,0,3"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Padding" Value="14,0"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Padding" Value="12,0"/>
-        <Setter Property="Margin" Value="0,4,2,0"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6,6,0,0"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter VerticalAlignment="Center"/>
+                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -266,57 +309,41 @@
                 <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
             </Trigger>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                <Setter Property="Background" Value="{StaticResource CyanSoftBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
+                <Setter Property="Background" Value="White"/>
                 <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
-                <Setter Property="FontWeight" Value="Bold"/>
             </DataTrigger>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
-            </Trigger>
         </Style.Triggers>
     </Style>
 
-    <!-- Disposition tile -->
+    <!-- Disposition choice: pill chip (navy when chosen) -->
     <Style x:Key="DispositionTile" TargetType="RadioButton">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
-        <Setter Property="Height" Value="38"/>
         <Setter Property="Margin" Value="3"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Bd" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8" Padding="10,0,8,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="Label" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" Foreground="{TemplateBinding Foreground}"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                            <Path x:Name="Tick" Grid.Column="1" Data="{StaticResource IconCheck}" Width="13" Height="13" Stretch="Uniform"
-                                  Stroke="{StaticResource CyanTextBrush}" StrokeThickness="3" StrokeLineJoin="Round"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed" Margin="6,0,0,0"/>
-                        </Grid>
+                    <Border x:Name="Bd" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="1"
+                            CornerRadius="16" Padding="12,6">
+                        <TextBlock x:Name="Label" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   MaxWidth="330"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource CyanSoftBrush}"/>
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
-                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavyBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
+                            <Setter TargetName="Label" Property="Foreground" Value="White"/>
                             <Setter TargetName="Label" Property="FontWeight" Value="SemiBold"/>
-                            <Setter TargetName="Tick" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource DisabledBrush}"/>
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource LineSoftBrush}"/>
-                            <Setter TargetName="Label" Property="Foreground" Value="{StaticResource DisabledTextBrush}"/>
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
                             <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -336,7 +363,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="Bd" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8">
+                    <Border x:Name="Bd" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="10">
                         <Grid>
                             <!-- Placeholder sits exactly where typed text starts: same padding as the text,
                                  plus the 2px WPF adds before the caret; follows the box's TextAlignment. -->
@@ -358,7 +385,7 @@
                         </Trigger>
                         <!-- Must stay below the Text triggers: once the box is clicked the placeholder goes -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource CyanBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource NavyBrush}"/>
                             <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
                             <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
@@ -376,8 +403,8 @@
     <Style TargetType="ComboBox">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Height" Value="34"/>
-        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Padding" Value="10,0"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Foreground" Value="{StaticResource NavyBrush}"/>
     </Style>

@@ -170,3 +170,26 @@ public static class StatusLabels
     public static string For(string? status) =>
         status != null && Labels.TryGetValue(status, out var l) ? l : (status ?? "");
 }
+
+/// <summary>GET /api/dialer/stats/today → stats (the agent's own numbers, US Eastern day).</summary>
+public sealed class TodayStats
+{
+    public int TotalCalls { get; set; }
+    public int TotalInbound { get; set; }
+    public int TotalOutbound { get; set; }
+    public int? AhtInboundSeconds { get; set; }
+    public int? AhtOutboundSeconds { get; set; }
+}
+
+/// <summary>GET /api/dialer/my-status-summary → time in each status today.</summary>
+public sealed class StatusSummary
+{
+    public List<StatusSeconds> Statuses { get; set; } = new();
+    public int TotalSeconds { get; set; }
+}
+
+public sealed class StatusSeconds
+{
+    public string Status { get; set; } = "";
+    public int Seconds { get; set; }
+}

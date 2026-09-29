@@ -11,86 +11,100 @@
             <RowDefinition Height="*"/>     <!-- disposition -->
         </Grid.RowDefinitions>
 
-        <!-- ============================================================ AGENT + STATUS -->
-        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="12,10">
-            <StackPanel>
-                <!-- Agent name, live status and time in status -->
-                <Grid Margin="0,0,0,8">
+        <!-- ============================================================ PROFILE + STATUS -->
+        <StackPanel Grid.Row="0" Margin="12,12,12,0">
+            <Border Style="{StaticResource Card}" Padding="12,10">
+                <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding AgentName}" FontSize="15" FontWeight="SemiBold"
-                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding AgentName}"/>
-                    <!-- Doubles as the phone-registration indicator -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0"
-                                ToolTip="{Binding HeaderStatusTooltip}">
-                        <Ellipse Width="9" Height="9" Fill="{Binding HeaderStatusColor}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding HeaderStatusText}" Foreground="{Binding HeaderStatusColor}" FontSize="12"
-                                   FontWeight="Bold" Margin="6,0,0,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding StatusTimer}" Style="{StaticResource Muted}" FontWeight="SemiBold"
-                                   Margin="8,0,0,0" VerticalAlignment="Center"
-                                   Visibility="{Binding PhoneRegistered, Converter={StaticResource BoolVis}}"/>
+                    <Border Width="38" Height="38" CornerRadius="19" Background="{StaticResource ChipBrush}">
+                        <TextBlock Text="{Binding AgentInitials}" FontSize="13" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="10,0,8,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding AgentName}" FontSize="14" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding AgentName}"/>
+                        <TextBlock Text="{Binding AgentExtension}" Style="{StaticResource Muted}" FontSize="12"/>
                     </StackPanel>
-                </Grid>
-
-                <!-- Aux selection -->
-                <Grid>
-                    <ComboBox ItemsSource="{Binding ManualStatuses}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
-                              DisplayMemberPath="Label" FontWeight="SemiBold" IsEnabled="{Binding CanChangeStatus}"
-                              Visibility="{Binding IsSystemStatus, Converter={StaticResource InverseBoolVis}}"/>
-
-                    <!-- System statuses (In Call, On Hold, After Call Work) can't be picked by hand -->
-                    <Border Height="34" CornerRadius="6" Background="{StaticResource DisabledBrush}"
-                            BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="1" Padding="10,0"
-                            Visibility="{Binding IsSystemStatus, Converter={StaticResource BoolVis}}"
-                            ToolTip="Set automatically by the dialer">
-                        <TextBlock Text="{Binding StatusLabel}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <!-- Status pill; doubles as the phone-registration indicator ("Not Registered") -->
+                    <Border Grid.Column="2" CornerRadius="13" Padding="10,4" VerticalAlignment="Center"
+                            Background="White" BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="1"
+                            ToolTip="{Binding HeaderStatusTooltip}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="{Binding HeaderStatusColor}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding HeaderStatusText}" Foreground="{Binding HeaderStatusColor}" FontSize="12"
+                                       FontWeight="SemiBold" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding StatusTimer}" Style="{StaticResource Muted}" FontSize="12" FontWeight="SemiBold"
+                                       Margin="6,0,0,0" VerticalAlignment="Center"
+                                       Visibility="{Binding PhoneRegistered, Converter={StaticResource BoolVis}}"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
-            </StackPanel>
-        </Border>
+            </Border>
 
-        <!-- ============================================================ TABS -->
-        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Height="36" Padding="4,0,12,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Button Style="{StaticResource TabButton}" Content="Phone" Command="{Binding ShowPhoneTabCommand}" Tag="{Binding ShowPhoneTab}"/>
-                <Button Grid.Column="1" Style="{StaticResource TabButton}" Command="{Binding ShowCallbacksTabCommand}" Tag="{Binding ShowCallbacks}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Callbacks" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                        <Border Background="{StaticResource CyanBrush}" CornerRadius="8" Padding="6,0" Margin="6,0,0,0" VerticalAlignment="Center"
-                                Visibility="{Binding Callbacks.HasItems, Converter={StaticResource BoolVis}}">
-                            <TextBlock Text="{Binding Callbacks.Count}" Foreground="White" FontSize="11" FontWeight="Bold"/>
-                        </Border>
-                    </StackPanel>
-                </Button>
-                <!-- Campaign code(s), e.g. CMXBSCSR; hover for the full campaign name(s). -->
-                <TextBlock Grid.Column="2" Text="{Binding CampaignCodes}" Style="{StaticResource Muted}" FontWeight="SemiBold"
-                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" TextAlignment="Right" VerticalAlignment="Center"
-                           Margin="10,0,8,0" ToolTip="{Binding CampaignSummary}"/>
-                <Button Grid.Column="3" Content="Change" Style="{StaticResource LinkButton}" Command="{Binding ChangeCampaignCommand}"
-                        ToolTip="Switch campaign (only while Not Ready)"/>
+            <!-- Aux selection -->
+            <Grid Margin="0,8,0,0">
+                <ComboBox ItemsSource="{Binding ManualStatuses}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
+                          DisplayMemberPath="Label" FontWeight="SemiBold" IsEnabled="{Binding CanChangeStatus}"
+                          Visibility="{Binding IsSystemStatus, Converter={StaticResource InverseBoolVis}}"/>
+                <!-- System statuses (In Call, On Hold, After Call Work) can't be picked by hand -->
+                <Border Height="36" CornerRadius="10" Background="{StaticResource DisabledBrush}"
+                        BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="1" Padding="10,0"
+                        Visibility="{Binding IsSystemStatus, Converter={StaticResource BoolVis}}"
+                        ToolTip="Set automatically by the dialer">
+                    <TextBlock Text="{Binding StatusLabel}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </Border>
             </Grid>
-        </Border>
+        </StackPanel>
+
+        <!-- ============================================================ TABS (segmented) -->
+        <Grid Grid.Row="1" Margin="12,10,12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="{StaticResource ChipBrush}" CornerRadius="10" Padding="3">
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource TabButton}" Content="Phone" Command="{Binding ShowPhoneTabCommand}" Tag="{Binding ShowPhoneTab}"/>
+                    <Button Style="{StaticResource TabButton}" Command="{Binding ShowCallbacksTabCommand}" Tag="{Binding ShowCallbacks}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Callbacks" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <Border Background="{StaticResource VoxOrangeBrush}" CornerRadius="8" Padding="6,0" Margin="6,0,0,0" VerticalAlignment="Center"
+                                    Visibility="{Binding Callbacks.HasItems, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="{Binding Callbacks.Count}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+            <!-- Campaign code(s), e.g. CMXBSCSR; hover for the full campaign name(s). -->
+            <TextBlock Grid.Column="1" Text="{Binding CampaignCodes}" Style="{StaticResource Muted}" FontSize="11" FontWeight="SemiBold"
+                       TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" TextAlignment="Right" VerticalAlignment="Center"
+                       Margin="10,0,8,0" ToolTip="{Binding CampaignSummary}"/>
+            <Button Grid.Column="2" Content="Change" Style="{StaticResource LinkButton}" Command="{Binding ChangeCampaignCommand}"
+                    VerticalAlignment="Center" ToolTip="Switch campaign (only while Not Ready)"/>
+        </Grid>
 
         <!-- ============================================================ PHONE -->
-        <Border Grid.Row="2" Padding="12" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="2" Padding="12,12,12,4"
                 Visibility="{Binding ShowPhoneTab, Converter={StaticResource BoolVis}}">
             <Grid>
                 <!-- Idle -->
                 <StackPanel Visibility="{Binding ShowIdle, Converter={StaticResource BoolVis}}">
-                    <Border Style="{StaticResource Card}">
+                    <Border Style="{StaticResource Card}" Padding="14,20">
                         <StackPanel>
-                            <TextBlock Text="WORKING" Style="{StaticResource Caps}"/>
-                            <TextBlock Text="{Binding CampaignSummary}" FontSize="15" FontWeight="SemiBold" Margin="0,2,0,0"
-                                       TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding IdleMessage}" Style="{StaticResource Muted}" Margin="0,4,0,0"/>
+                            <Border Width="52" Height="52" CornerRadius="26" Background="{StaticResource VoxOrangeSoftBrush}" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource IconPhone}" Width="24" Height="24" Stretch="Uniform"
+                                      Stroke="{StaticResource VoxOrangeBrush}" StrokeThickness="2" StrokeLineJoin="Round"/>
+                            </Border>
+                            <TextBlock Text="{Binding IdleMessage}" FontSize="14" FontWeight="SemiBold" TextAlignment="Center"
+                                       TextWrapping="Wrap" Margin="0,10,0,0"/>
+                            <TextBlock Text="{Binding CampaignSummary}" Style="{StaticResource Muted}" TextAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -98,15 +112,15 @@
                             Visibility="{Binding ShowDialNext, Converter={StaticResource BoolVis}}">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource IconPhone}" Style="{StaticResource Icon}"/>
-                            <TextBlock Text="Dial Next Lead" Margin="8,0,0,0" FontSize="15" FontWeight="Bold"
+                            <TextBlock Text="Dial next lead" Margin="8,0,0,0" FontSize="15" FontWeight="Bold"
                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                         </StackPanel>
                     </Button>
 
-                    <Border Background="{StaticResource CyanSoftBrush}" CornerRadius="10" Padding="12,10" Margin="0,10,0,0"
+                    <Border Background="{StaticResource ChipBrush}" CornerRadius="10" Padding="12,10" Margin="0,10,0,0"
                             Visibility="{Binding ShowAutoDialInfo, Converter={StaticResource BoolVis}}">
                         <TextBlock Text="Auto-dial campaign — set yourself Ready and calls start on their own."
-                                   Foreground="{StaticResource CyanTextBrush}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                   FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </Border>
 
                     <Grid Margin="0,10,0,0">
@@ -114,33 +128,58 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox Text="{Binding ManualNumber, UpdateSourceTrigger=PropertyChanged}" Tag="Manual dial — phone number"/>
-                        <Button Grid.Column="1" Content="Dial" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Width="72"
-                                Command="{Binding ManualDialCommand}"/>
+                        <TextBox Text="{Binding ManualNumber, UpdateSourceTrigger=PropertyChanged}" Tag="Phone number"/>
+                        <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Padding="16,0"
+                                Command="{Binding ManualDialCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconPhone}" Style="{StaticResource Icon}" Width="15" Height="15"/>
+                                <TextBlock Text="Dial" Margin="6,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
+
+                    <!-- Today's numbers (US Eastern day), refreshed every minute while idle -->
+                    <TextBlock Text="TODAY" Style="{StaticResource Caps}" Margin="2,16,0,6"/>
+                    <UniformGrid Columns="3" Margin="-3,0">
+                        <Border Style="{StaticResource Card}" Margin="3" Padding="8,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TodayCalls}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Calls" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="3" Padding="8,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TodayAht}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Avg handle" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="3" Padding="8,8">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TodayProductive}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Productive" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
                 </StackPanel>
 
                 <!-- Connecting (auto-answer) -->
                 <StackPanel Visibility="{Binding ShowConnecting, Converter={StaticResource BoolVis}}">
-                    <Border Background="White" BorderBrush="{StaticResource CyanBrush}" BorderThickness="2" CornerRadius="10" Padding="14">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Width="46" Height="46" CornerRadius="23" Background="{StaticResource CyanSoftBrush}">
-                                <Path Data="{StaticResource IconPhone}" Width="22" Height="22" Stretch="Uniform"
-                                      Stroke="{StaticResource CyanTextBrush}" StrokeThickness="2" StrokeLineJoin="Round"/>
+                    <Border Background="{StaticResource NavyBrush}" CornerRadius="14" Padding="16">
+                        <StackPanel>
+                            <Border Background="{StaticResource NavySoftBrush}" CornerRadius="11" Padding="10,3" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DirectionText, StringFormat={}{0} call · connecting}" Foreground="{StaticResource NavyTextSoftBrush}"
+                                           FontSize="11" FontWeight="SemiBold"/>
                             </Border>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding DirectionText, StringFormat={}{0} call}" Style="{StaticResource Caps}"
-                                           Foreground="{StaticResource CyanTextBrush}"/>
-                                <TextBlock Text="{Binding ContactName}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding ContactNumber}" Style="{StaticResource Muted}" FontSize="13"/>
-                            </StackPanel>
-                        </Grid>
+                            <Border Width="54" Height="54" CornerRadius="27" Background="{StaticResource NavySoftBrush}" Margin="0,12,0,0">
+                                <Path Data="{StaticResource IconPhone}" Width="24" Height="24" Stretch="Uniform"
+                                      Stroke="{StaticResource TitleMutedBrush}" StrokeThickness="2" StrokeLineJoin="Round"/>
+                            </Border>
+                            <TextBlock Text="{Binding ContactName}" Foreground="White" FontSize="16" FontWeight="SemiBold"
+                                       TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,8,0,0"/>
+                            <TextBlock Text="{Binding ContactNumber}" Foreground="{StaticResource NavyTextSoftBrush}" FontSize="12" TextAlignment="Center"/>
+                        </StackPanel>
                     </Border>
-                    <Border Background="{StaticResource SuccessSoftBrush}" CornerRadius="10" Padding="12,12" Margin="0,10,0,0">
+                    <Border Background="{StaticResource SuccessSoftBrush}" CornerRadius="10" Padding="12,10" Margin="0,10,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Ellipse Width="8" Height="8" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center"/>
                             <TextBlock Text="Auto-answering · connecting audio…" Foreground="{StaticResource SuccessBrush}"
@@ -148,72 +187,62 @@
                         </StackPanel>
                     </Border>
                     <TextBlock Text="Your headset connects automatically — no need to click answer." Style="{StaticResource Muted}"
-                               TextAlignment="Center" Margin="0,10,0,0"/>
+                               TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0"/>
                 </StackPanel>
 
                 <!-- In call -->
                 <StackPanel Visibility="{Binding ShowInCall, Converter={StaticResource BoolVis}}">
-                    <Border Style="{StaticResource Card}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="8" Height="8" Fill="{Binding CallStateColor}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding CallStateText}" Foreground="{Binding CallStateColor}" FontSize="12"
-                                           FontWeight="Bold" Margin="6,0,0,0"/>
-                            </StackPanel>
-                            <TextBlock Grid.Column="1" Text="{Binding CallTimer}" FontSize="20" FontWeight="Bold"/>
-                            <TextBlock Grid.Row="1" Text="{Binding ContactName}" FontSize="16" FontWeight="SemiBold" Margin="0,4,8,0"
-                                       TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ContactNumber}" Style="{StaticResource Muted}"
-                                       FontSize="13" Margin="0,6,0,0" TextWrapping="NoWrap"/>
-                        </Grid>
+                    <Border Background="{StaticResource NavyBrush}" CornerRadius="14" Padding="16,14">
+                        <StackPanel>
+                            <Border Background="{StaticResource NavySoftBrush}" CornerRadius="11" Padding="10,3" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="7" Height="7" Fill="{Binding CallStateColor}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CallStateText}" Foreground="White" FontSize="11" FontWeight="SemiBold" Margin="6,0,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="{Binding ContactName}" Foreground="White" FontSize="16" FontWeight="SemiBold"
+                                       TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,10,0,0"/>
+                            <TextBlock Text="{Binding ContactNumber}" Foreground="{StaticResource NavyTextSoftBrush}" FontSize="12" TextAlignment="Center"/>
+                            <TextBlock Text="{Binding CallTimer}" Foreground="White" FontSize="24" FontWeight="SemiBold" TextAlignment="Center" Margin="0,6,0,0"/>
+                        </StackPanel>
                     </Border>
 
-                    <UniformGrid Columns="4" Margin="-3,10,-3,0">
-                        <Button Style="{StaticResource ControlButton}" Command="{Binding ToggleMuteCommand}" Tag="{Binding IsMuted}">
-                            <StackPanel>
-                                <Path Data="{StaticResource IconMicOff}" Style="{StaticResource Icon}"
-                                      Visibility="{Binding IsMuted, Converter={StaticResource BoolVis}}"/>
-                                <Path Data="{StaticResource IconMic}" Style="{StaticResource Icon}"
-                                      Visibility="{Binding IsMuted, Converter={StaticResource InverseBoolVis}}"/>
-                                <TextBlock Text="Mute" HorizontalAlignment="Center" Margin="0,3,0,0"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource ControlButton}" Command="{Binding ToggleHoldCommand}" Tag="{Binding IsOnHold}">
-                            <StackPanel>
+                    <UniformGrid Columns="4" Margin="0,12,0,0">
+                        <StackPanel HorizontalAlignment="Center">
+                            <Button Style="{StaticResource RoundControl}" Command="{Binding ToggleMuteCommand}" Tag="{Binding IsMuted}" ToolTip="Mute">
+                                <Grid>
+                                    <Path Data="{StaticResource IconMicOff}" Style="{StaticResource Icon}"
+                                          Visibility="{Binding IsMuted, Converter={StaticResource BoolVis}}"/>
+                                    <Path Data="{StaticResource IconMic}" Style="{StaticResource Icon}"
+                                          Visibility="{Binding IsMuted, Converter={StaticResource InverseBoolVis}}"/>
+                                </Grid>
+                            </Button>
+                            <TextBlock Text="Mute" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Button Style="{StaticResource RoundControl}" Command="{Binding ToggleHoldCommand}" Tag="{Binding IsOnHold}" ToolTip="Hold">
                                 <Path Data="{StaticResource IconPause}" Style="{StaticResource Icon}"/>
-                                <TextBlock Text="Hold" HorizontalAlignment="Center" Margin="0,3,0,0"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource ControlButton}" Command="{Binding ToggleKeypadCommand}">
-                            <StackPanel>
+                            </Button>
+                            <TextBlock Text="Hold" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Button Style="{StaticResource RoundControl}" Command="{Binding ToggleKeypadCommand}" ToolTip="Keypad">
                                 <Path Data="{StaticResource IconKeypad}" Style="{StaticResource FilledIcon}"/>
-                                <TextBlock Text="Keypad" HorizontalAlignment="Center" Margin="0,3,0,0"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource ControlButton}" Command="{Binding OpenLineTwoCommand}">
-                            <StackPanel>
+                            </Button>
+                            <TextBlock Text="Keypad" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Button Style="{StaticResource RoundControl}" Command="{Binding OpenLineTwoCommand}" ToolTip="Line 2 — transfer or conference">
                                 <Path Data="{StaticResource IconPhonePlus}" Style="{StaticResource Icon}"/>
-                                <TextBlock Text="Line 2" HorizontalAlignment="Center" Margin="0,3,0,0"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </StackPanel>
-                        </Button>
+                            </Button>
+                            <TextBlock Text="Line 2" Style="{StaticResource Muted}" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
                     </UniformGrid>
 
-                    <Button Style="{StaticResource DangerButton}" Margin="0,10,0,0" Command="{Binding HangUpCommand}">
+                    <Button Style="{StaticResource DangerButton}" Margin="0,12,0,0" Command="{Binding HangUpCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource IconHangUp}" Style="{StaticResource FilledIcon}" Width="20" Height="20"/>
-                            <TextBlock Text="Hang Up" Margin="8,0,0,0" FontSize="15" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="End call" Margin="8,0,0,0" FontSize="15" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -407,7 +436,7 @@
         </Border>
 
         <!-- ============================================================ MESSAGE -->
-        <Border Grid.Row="3" Margin="12,8,12,0" CornerRadius="8" Padding="10,6"
+        <Border Grid.Row="3" Margin="12,8,12,0" CornerRadius="10" Padding="12,8"
                 Visibility="{Binding HasMessage, Converter={StaticResource BoolVis}}">
             <Border.Style>
                 <Style TargetType="Border">
@@ -444,7 +473,7 @@
         </Border>
 
         <!-- ============================================================ DISPOSITION -->
-        <Grid Grid.Row="4" Margin="12,10,12,12" Visibility="{Binding ShowPhoneTab, Converter={StaticResource BoolVis}}">
+        <Grid Grid.Row="4" Margin="12,10,12,12" Visibility="{Binding ShowDispositionPanel, Converter={StaticResource BoolVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -469,7 +498,7 @@
                 <ItemsControl ItemsSource="{Binding Dispositions}" IsEnabled="{Binding DispositionEnabled}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="2" VerticalAlignment="Top"/>
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -508,7 +537,7 @@
             <CheckBox Grid.Row="5" Margin="0,8,0,0" Content="Set me to Not Ready after saving"
                       IsChecked="{Binding SetNotReadyAfterSave, Mode=TwoWay}" IsEnabled="{Binding DispositionEnabled}"/>
 
-            <Button Grid.Row="6" Content="Save Disposition" Style="{StaticResource PrimaryButton}" Margin="0,8,0,0"
+            <Button Grid.Row="6" Content="Save disposition" Style="{StaticResource PrimaryButton}" Margin="0,8,0,0"
                     Command="{Binding SaveDispositionCommand}"/>
         </Grid>
 

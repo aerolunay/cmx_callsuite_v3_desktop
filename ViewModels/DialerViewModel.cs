@@ -256,6 +256,72 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     public string Status => _status;
     public string AgentName => _main.AgentName;
 
+    /// <summary>"TA" for "Test Agent 2" — the avatar in the profile card.</summary>
+    public string AgentInitials
+    {
+        get
+        {
+            var parts = AgentName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Where(p => char.IsLetter(p[0])).ToArray();
+            if (parts.Length == 0) return "?";
+            var first = char.ToUpperInvariant(parts[0][0]);
+            return parts.Length == 1 ? first.ToString() : $"{first}{char.ToUpperInvariant(parts[^1][0])}";
+        }
+    }
+
+    public string AgentExtension => string.IsNullOrWhiteSpace(_main.Agent?.Extension) ? "" : $"Ext. {_main.Agent!.Extension}";
+
+    /// <summary>The disposition section only appears when there's a call to disposition.</summary>
+    public bool ShowDispositionPanel => ShowPhoneTab && HasCall;
+
+    // ---------------------------------------------------------------- today's numbers (idle screen)
+    private string _todayCalls = "—";
+    private string _todayAht = "—";
+    private string _todayProductive = "—";
+    private DateTime _nextTodayRefresh = DateTime.MinValue;
+    private bool _todayRefreshing;
+
+    public string TodayCalls => _todayCalls;
+    public string TodayAht => _todayAht;
+    public string TodayProductive => _todayProductive;
+
+    private static readonly HashSet<string> ProductiveStatuses = new() { "READY", "IN_CALL", "ON_HOLD", "AFTER_CALL_WORK" };
+
+    private async Task RefreshTodayAsync()
+    {
+        if (_todayRefreshing) return;
+        _todayRefreshing = true;
+        try
+        {
+            var stats = await _main.Api.GetTodayStatsAsync();
+            var summary = await _main.Api.GetStatusSummaryAsync();
+
+            if (stats != null)
+            {
+                _todayCalls = stats.TotalCalls.ToString(CultureInfo.InvariantCulture);
+                // Handle time averaged over both directions, weighted by how many calls each had.
+                double weighted = 0; int counted = 0;
+                if (stats.AhtInboundSeconds is int ib && stats.TotalInbound > 0) { weighted += ib * stats.TotalInbound; counted += stats.TotalInbound; }
+                if (stats.AhtOutboundSeconds is int ob && stats.TotalOutbound > 0) { weighted += ob * stats.TotalOutbound; counted += stats.TotalOutbound; }
+                _todayAht = counted == 0 ? "—" : TimeSpan.FromSeconds(Math.Round(weighted / counted)).ToString(@"m\:ss", CultureInfo.InvariantCulture);
+            }
+            if (summary != null && summary.TotalSeconds > 0)
+            {
+                var productive = summary.Statuses.Where(x => ProductiveStatuses.Contains(x.Status)).Sum(x => x.Seconds);
+                _todayProductive = $"{Math.Round(100.0 * productive / summary.TotalSeconds):0}%";
+            }
+            Notify(nameof(TodayCalls), nameof(TodayAht), nameof(TodayProductive));
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Today's stats refresh failed", ex);
+        }
+        finally
+        {
+            _todayRefreshing = false;
+        }
+    }
+
     // Header indicator: shows the aux status while the phone is registered,
     // "Not Registered" (red) when it isn't — calls can't reach the agent then.
     public bool PhoneRegistered => _main.SipRegistered;
@@ -657,6 +723,11 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     private void OnClockTick()
     {
         OnPropertyChanged(nameof(StatusTimer));
+        if (!HasCall && DateTime.Now >= _nextTodayRefresh)
+        {
+            _nextTodayRefresh = DateTime.Now.AddSeconds(60);
+            _ = RefreshTodayAsync();
+        }
         if (HasCall) OnPropertyChanged(nameof(CallTimer));
         if (LineTwoActive) OnPropertyChanged(nameof(LineTwoTimer));
 
@@ -1327,6 +1398,7 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
 
             ClearCall();
             Notice = "Disposition saved.";
+            _nextTodayRefresh = DateTime.MinValue; // update today's numbers now
             _ = Callbacks.RefreshAsync(); // a saved callback disposition clears it from the list
         }
         catch (ApiException ex)

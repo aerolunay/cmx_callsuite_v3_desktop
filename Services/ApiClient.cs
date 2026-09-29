@@ -153,6 +153,14 @@ public sealed class ApiClient : IDisposable
 
     // ---------------------------------------------------------------- status + phone
 
+    public async Task<TodayStats?> GetTodayStatsAsync() => Read<TodayStats>(await Get("dialer/stats/today"), "stats");
+
+    public async Task<StatusSummary?> GetStatusSummaryAsync()
+    {
+        var root = await Get("dialer/my-status-summary");
+        return root.ValueKind == JsonValueKind.Object ? root.Deserialize<StatusSummary>(Json) : null;
+    }
+
     public async Task<AgentStatusInfo?> GetStatusAsync() => Read<AgentStatusInfo>(await Get("dialer/status"), "status");
 
     public async Task<AgentStatusInfo> SetStatusAsync(string status, string? campaignId) =>
