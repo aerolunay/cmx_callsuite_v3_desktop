@@ -9,11 +9,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>CmxDialer</RootNamespace>
-    <AssemblyName>CmxDialer</AssemblyName>
-    <Product>CMX CallSuite Desktop v3</Product>
-    <Company>CallMax Solutions</Company>
+    <AssemblyName>VoxSuite</AssemblyName>
+    <Product>VoxSuite</Product>
+    <AssemblyTitle>VoxSuite</AssemblyTitle>
+    <Description>VoxSuite — SIP phone solutions</Description>
+    <Company>VoxSuite</Company>
     <Version>3.1.2</Version>
-    <ApplicationIcon>Assets\handset.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\voxsuite.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- WFO0003 is WinForms-only advice; this is a WPF app and WPF sets DPI awareness via the manifest -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
@@ -39,9 +41,9 @@
 
   <ItemGroup>
     <!-- Brand assets, embedded in the exe -->
-    <Resource Include="Assets\handset.ico" />
-    <Resource Include="Assets\callmax-logo.png" />
-    <Resource Include="Assets\callmax-mark.png" />
+    <Resource Include="Assets\voxsuite.ico" />
+    <Resource Include="Assets\voxsuite-logo.png" />
+    <Resource Include="Assets\voxsuite-mark.png" />
   </ItemGroup>
 
   <ItemGroup>

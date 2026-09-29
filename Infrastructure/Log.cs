@@ -8,7 +8,7 @@ public static class Log
     private static readonly object Gate = new();
 
     public static string Directory =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CmxDialer", "logs");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VoxSuite", "logs");
 
     public static void Info(string message) => Write("INFO ", message);
 

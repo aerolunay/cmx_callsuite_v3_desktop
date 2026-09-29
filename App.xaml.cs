@@ -15,7 +15,7 @@ public partial class App : Application
         _singleInstance = new Mutex(true, "CmxDialer.SingleInstance", out var isFirst);
         if (!isFirst)
         {
-            MessageBox.Show("CMX CallSuite Desktop v3 is already running.", "CMX CallSuite Desktop v3", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("VoxSuite is already running.", "VoxSuite", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
@@ -25,7 +25,7 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             Log.Error("Unhandled UI exception", args.Exception);
-            MessageBox.Show(args.Exception.Message, "CMX CallSuite Desktop v3", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(args.Exception.Message, "VoxSuite", MessageBoxButton.OK, MessageBoxImage.Warning);
             args.Handled = true;
         };
         TaskScheduler.UnobservedTaskException += (_, args) =>
@@ -35,7 +35,7 @@ public partial class App : Application
         };
 
         var settings = AppSettings.Load();
-        Log.Info($"Starting CMX CallSuite Desktop v3 — server {settings.ServerUrl}, SIP UDP port {settings.SipPort}");
+        Log.Info($"Starting VoxSuite — server {settings.ServerUrl}, SIP UDP port {settings.SipPort}");
 
         var window = new MainWindow { DataContext = new MainViewModel(settings) };
         MainWindow = window;

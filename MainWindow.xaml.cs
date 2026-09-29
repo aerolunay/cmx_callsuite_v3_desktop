@@ -74,9 +74,9 @@ public partial class MainWindow : Window
     private string TrayText()
     {
         var vm = Vm;
-        if (vm == null || !vm.HasAgent) return "CallSuite v3 — signed out";
+        if (vm == null || !vm.HasAgent) return "VoxSuite — signed out";
         var status = (vm.CurrentView as DialerViewModel)?.StatusLabel;
-        return string.IsNullOrEmpty(status) ? $"CallSuite v3 — {vm.AgentName}" : $"CallSuite v3 — {vm.AgentName} · {status}";
+        return string.IsNullOrEmpty(status) ? $"VoxSuite — {vm.AgentName}" : $"VoxSuite — {vm.AgentName} · {status}";
     }
 
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -114,7 +114,7 @@ public partial class MainWindow : Window
         if (vm != null && !vm.CanCloseWindow)
         {
             e.Cancel = true;
-            MessageBox.Show(this, "Sign out before closing the dialer.", "CMX CallSuite Desktop v3",
+            MessageBox.Show(this, "Sign out before closing the dialer.", "VoxSuite",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }

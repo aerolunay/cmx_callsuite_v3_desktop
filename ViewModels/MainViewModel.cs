@@ -284,11 +284,11 @@ public sealed class MainViewModel : ObservableObject
         if (_dialer != null && _dialer.BlocksSignOut)
         {
             MessageBox.Show("Finish your call and save the disposition before signing out.",
-                "CMX CallSuite Desktop v3", MessageBoxButton.OK, MessageBoxImage.Information);
+                "VoxSuite", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        if (MessageBox.Show("Sign out of the dialer?", "CMX CallSuite Desktop v3",
+        if (MessageBox.Show("Sign out of the dialer?", "VoxSuite",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
             return;
 

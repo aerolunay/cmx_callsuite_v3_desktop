@@ -63,7 +63,7 @@ public sealed class AsyncCommand : ICommand
         catch (Exception ex)
         {
             Log.Error("Command failed", ex);
-            MessageBox.Show(ex.Message, "CMX CallSuite Desktop v3", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(ex.Message, "VoxSuite", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
         {

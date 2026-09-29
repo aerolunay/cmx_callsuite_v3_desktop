@@ -6,7 +6,7 @@ using Forms = System.Windows.Forms;
 namespace CmxDialer.Infrastructure;
 
 /// <summary>
-/// Notification-area (tray) icon: handset on a white tile, a tooltip with the
+/// Notification-area (tray) icon: the VoxSuite mark, a tooltip with the
 /// agent's name and live status, left-click to bring the dialer forward, and a
 /// right-click menu (Show dialer / Exit — Exit only works when signed out).
 /// </summary>
@@ -24,14 +24,14 @@ public sealed class TrayIcon : IDisposable
         _window = window;
         _tooltip = tooltip;
 
-        var resource = Application.GetResourceStream(new Uri("pack://application:,,,/Assets/handset.ico"))
+        var resource = Application.GetResourceStream(new Uri("pack://application:,,,/Assets/voxsuite.ico"))
                        ?? throw new InvalidOperationException("Tray icon resource missing.");
         using (var stream = resource.Stream)
         {
             _icon = new Forms.NotifyIcon
             {
                 Icon = new Drawing.Icon(stream, Forms.SystemInformation.SmallIconSize),
-                Text = "CMX CallSuite Desktop v3",
+                Text = "VoxSuite",
                 Visible = true,
             };
         }

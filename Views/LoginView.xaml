@@ -3,11 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Margin="28,40,28,24">
         <StackPanel VerticalAlignment="Top">
-            <Image Source="pack://application:,,,/Assets/callmax-logo.png" Height="34" HorizontalAlignment="Left"
+            <Image Source="pack://application:,,,/Assets/voxsuite-logo.png" Height="54" HorizontalAlignment="Left"
                    RenderOptions.BitmapScalingMode="HighQuality"/>
-            <TextBlock Text="CallSuite Desktop" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource MutedBrush}" Margin="2,4,0,0"/>
             <TextBlock Text="Sign in" FontSize="24" FontWeight="Bold" Margin="0,28,0,0"/>
-            <TextBlock Text="Use the same email you use for CMX CallSuite." Style="{StaticResource Muted}"
+            <TextBlock Text="Use the same email you use for VoxSuite." Style="{StaticResource Muted}"
                        FontSize="13" Margin="0,4,0,24"/>
 
             <!-- Step 1: email -->
@@ -56,7 +55,7 @@
             </Border>
         </StackPanel>
 
-        <TextBlock Text="{Binding AppVersion, StringFormat='CMX CallSuite v{0} · CMX Innovations · CallMax Solutions'}" Style="{StaticResource Muted}" FontSize="11"
+        <TextBlock Text="{Binding AppVersion, StringFormat='VoxSuite v{0} · SIP Phone Solutions'}" Style="{StaticResource Muted}" FontSize="11"
                    VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
     </Grid>
 </UserControl>

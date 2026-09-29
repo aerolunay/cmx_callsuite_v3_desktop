@@ -3,7 +3,8 @@
                     xmlns:infra="clr-namespace:CmxDialer.Infrastructure">
 
     <!-- Brand colors (frontend/src/styles/theme.css) -->
-    <SolidColorBrush x:Key="NavyBrush" Color="#182D57"/>
+    <SolidColorBrush x:Key="NavyBrush" Color="#0E1A2B"/> <!-- VoxSuite navy -->
+    <SolidColorBrush x:Key="VoxOrangeBrush" Color="#FF6B3D"/> <!-- VoxSuite accent (logo) -->
     <SolidColorBrush x:Key="CyanBrush" Color="#00ADEE"/>
     <SolidColorBrush x:Key="CyanSoftBrush" Color="#E0F5FD"/>
     <SolidColorBrush x:Key="CyanTextBrush" Color="#0079A8"/>
