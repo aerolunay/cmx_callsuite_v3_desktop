@@ -274,6 +274,12 @@ public sealed class DialerViewModel : ObservableObject, IDisposable
     /// <summary>The disposition section only appears when there's a call to disposition.</summary>
     public bool ShowDispositionPanel => ShowPhoneTab && HasCall;
 
+    /// <summary>
+    /// The disposition choices, callback fields, "Not Ready after saving" and Save appear once the
+    /// call has ended (wrap-up). During the call only the comments box is shown, for notes.
+    /// </summary>
+    public bool ShowDispositionChoices => ShowPhoneTab && IsWrapUp;
+
     // ---------------------------------------------------------------- today's numbers (idle screen)
     private string _todayCalls = "—";
     private string _todayAht = "—";

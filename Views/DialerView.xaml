@@ -484,7 +484,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Grid>
+            <Grid Visibility="{Binding ShowDispositionChoices, Converter={StaticResource BoolVis}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -494,7 +494,7 @@
                            FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
 
-            <ScrollViewer Grid.Row="1" Margin="-3,6,-3,0" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="1" Margin="-3,6,-3,0" VerticalScrollBarVisibility="Auto" Visibility="{Binding ShowDispositionChoices, Converter={StaticResource BoolVis}}">
                 <ItemsControl ItemsSource="{Binding Dispositions}" IsEnabled="{Binding DispositionEnabled}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -529,15 +529,15 @@
             <TextBox Grid.Row="3" Margin="0,8,0,0" Height="38" Text="{Binding CallbackNumber, UpdateSourceTrigger=PropertyChanged}"
                      Tag="Callback number, 10 digits (if different)" Visibility="{Binding ShowCallbackNumber, Converter={StaticResource BoolVis}}"/>
 
-            <!-- Two lines of text visible; longer comments scroll -->
+            <!-- Visible during the call too (notes); two lines visible, longer comments scroll -->
             <TextBox Grid.Row="4" Margin="0,8,0,0" Height="64" Text="{Binding Comments, UpdateSourceTrigger=PropertyChanged}"
                      Tag="Comments (required)" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
                      Padding="6,4" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding DispositionEnabled}"/>
 
-            <CheckBox Grid.Row="5" Margin="0,8,0,0" Content="Set me to Not Ready after saving"
+            <CheckBox Grid.Row="5" Margin="0,8,0,0" Content="Set me to Not Ready after saving" Visibility="{Binding ShowDispositionChoices, Converter={StaticResource BoolVis}}"
                       IsChecked="{Binding SetNotReadyAfterSave, Mode=TwoWay}" IsEnabled="{Binding DispositionEnabled}"/>
 
-            <Button Grid.Row="6" Content="Save disposition" Style="{StaticResource PrimaryButton}" Margin="0,8,0,0"
+            <Button Grid.Row="6" Content="Save disposition" Style="{StaticResource PrimaryButton}" Margin="0,8,0,0" Visibility="{Binding ShowDispositionChoices, Converter={StaticResource BoolVis}}"
                     Command="{Binding SaveDispositionCommand}"/>
         </Grid>
 
