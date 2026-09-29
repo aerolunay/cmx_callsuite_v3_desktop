@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Margin="24,40,24,20">
         <StackPanel VerticalAlignment="Top">
-            <Image Source="pack://application:,,,/Assets/voxsuite-logo.png" Height="52" HorizontalAlignment="Center"
+            <Image Source="pack://application:,,,/Assets/voxsuite-logo.png" Height="84" HorizontalAlignment="Center"
                    RenderOptions.BitmapScalingMode="HighQuality"/>
 
             <!-- Sign-in card -->
