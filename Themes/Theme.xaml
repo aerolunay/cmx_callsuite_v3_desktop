@@ -4,9 +4,11 @@
 
     <!-- Brand colors (frontend/src/styles/theme.css) -->
     <SolidColorBrush x:Key="NavyBrush" Color="#0E1A2B"/> <!-- VoxSuite navy -->
-    <SolidColorBrush x:Key="VoxOrangeBrush" Color="#FF6B3D"/> <!-- VoxSuite accent (logo) -->
-    <SolidColorBrush x:Key="VoxOrangeSoftBrush" Color="#FFF1EC"/>
-    <SolidColorBrush x:Key="VoxOrangeTextBrush" Color="#C2451B"/>
+    <!-- App accent: teal, a shade deeper than #0EA5A4 so white button text passes WCAG AA (4.5:1).
+         The logo keeps its own colours. -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#0D8483"/>
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#E6F6F5"/>
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#0B6B6A"/>
     <SolidColorBrush x:Key="NavySoftBrush" Color="#1C2B42"/>   <!-- surfaces on the dark call card -->
     <SolidColorBrush x:Key="NavyTextSoftBrush" Color="#9FB0CC"/>
     <SolidColorBrush x:Key="ChipBrush" Color="#E8ECF3"/>        <!-- segmented control track, avatar -->
@@ -131,10 +133,10 @@
         </Setter>
     </Style>
 
-    <!-- The one main action on a screen (Continue, Sign in, Dial, Save disposition): VoxSuite orange. -->
+    <!-- The one main action on a screen (Continue, Sign in, Dial, Save disposition): the teal accent. -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
-        <Setter Property="Background" Value="{StaticResource VoxOrangeBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource VoxOrangeBrush}"/>
+        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
         <Setter Property="Foreground" Value="White"/>
     </Style>
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
@@ -162,7 +164,7 @@
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource VoxOrangeTextBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentTextBrush}"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -229,7 +231,7 @@
     </Style>
 
     <!-- Round in-call control: the icon in a 48 px circle (the label goes under it in the view).
-         Tag=True = active (muted / on hold): orange tint. -->
+         Tag=True = active (muted / on hold): teal tint. -->
     <Style x:Key="RoundControl" TargetType="Button">
         <Setter Property="Width" Value="48"/>
         <Setter Property="Height" Value="48"/>
@@ -262,9 +264,9 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                <Setter Property="Background" Value="{StaticResource VoxOrangeSoftBrush}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource VoxOrangeBrush}"/>
-                <Setter Property="Foreground" Value="{StaticResource VoxOrangeTextBrush}"/>
+                <Setter Property="Background" Value="{StaticResource AccentSoftBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentTextBrush}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
